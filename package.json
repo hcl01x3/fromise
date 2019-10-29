@@ -2,9 +2,9 @@
   "name": "fromise",
   "version": "1.0.0",
   "description": "Fake implementation of Promise using double linked list.",
-  "author": "hxxcxxx <hyochan.lee@gmail.com> (https://medium.com/@hyochan.lee)",
+  "author": "hxxcxxx <hyochan.lee@gmail.com>",
   "keywords": [
-    "promise"
+    "Promise"
   ],
   "license": "MIT",
   "main": "dist/fromise.min.js",
@@ -26,7 +26,8 @@
   "scripts": {
     "clean": "rm -rf ./dist",
     "build": "babel lib -w -d dist",
+    "test:lib": "jest ./lib",
     "test:dist": "jest ./dist",
-    "test:lib": "jest ./lib"
+    "test": "yarn run build && yarn run test:dist"
   }
 }
