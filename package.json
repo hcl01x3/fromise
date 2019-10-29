@@ -1,0 +1,32 @@
+{
+  "name": "fromise",
+  "version": "1.0.0",
+  "description": "Fake implementation of Promise using double linked list.",
+  "author": "hxxcxxx <hyochan.lee@gmail.com> (https://medium.com/@hyochan.lee)",
+  "keywords": [
+    "promise"
+  ],
+  "license": "MIT",
+  "main": "dist/fromise.min.js",
+  "homepage": "https://github.com/hxxcxxx/fromise",
+  "repository": "https://github.com/hxxcxxx/fromise.git",
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@types/jest": "^24.0.20",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "babel lib -w -d dist",
+    "test:dist": "jest ./dist",
+    "test:lib": "jest ./lib"
+  }
+}
