@@ -2,19 +2,60 @@
 
 Fake implementation of Promise using double linked list.
 
-### Simple example
+## Install
+
+`npm install fromise`
+
+## Usage
+
+```js
+const Fromise  = require('fromise');
+```
+
+## Usage Examples
+
+### Standalone fromise
 
 ```js
 const Fromise = require('fromise');
 
-const p = new Fromise((resolve, reject) => {
-  // async job
-  resolve(result);
+const f = new Fromise((resolve, reject) => {
+  // do async task.
   // if something wrong
-  reject(error);
+  // reject(new Error());
+  resolve('done');
 })
-.then(result => console.log(result))
-.catch(error => console.error(error))
-.finally(() => console.log('finally'))
+  .then(res => console.log(res))
+  .catch(err => console.error(err))
+  .finally(() => console.log('finally'))
 
+// done
+// finally
+```
+
+### Nested fromises
+
+```js
+const Fromise = require('fromise');
+
+const f = new Fromise(resolve => resolve(['A']))
+  .then(res => {
+    return new Fromise(resolve => {
+      res.push('B');
+      resolve(res);
+    })
+      .then(res => {
+        res.push('C');
+        return res;
+      })
+      .catch(err => err);
+  })
+  .then(res => {
+    res.push('D');
+    return res;
+  })
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+
+// [ 'A', 'B', 'C', 'D' ]
 ```
