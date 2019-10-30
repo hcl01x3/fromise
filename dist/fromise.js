@@ -18,8 +18,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var events = require('events');
-
 var STATE = {
   PENDING: 'pending',
   FULFILLED: 'fulfilled',
@@ -61,11 +59,11 @@ function () {
     this[nodes] = first;
 
     try {
-      executor(function (result) {
-        return first.react(result, STATE.FULFILLED);
+      executor(function (value) {
+        return first.react(value, STATE.FULFILLED);
       }, // resolve()
-      function (error) {
-        return first.react(error, STATE.REJECTED);
+      function (reason) {
+        return first.react(reason, STATE.REJECTED);
       } // reject()
       );
     } catch (err) {
@@ -115,16 +113,16 @@ function () {
     }
   }], [{
     key: "resolve",
-    value: function resolve(result) {
+    value: function resolve(value) {
       return new Fromise(function (resolve) {
-        return resolve(result);
+        return resolve(value);
       });
     }
   }, {
     key: "reject",
-    value: function reject(error) {
+    value: function reject(reason) {
       return new Fromise(function (_, reject) {
-        return reject(error);
+        return reject(reason);
       });
     }
   }, {
@@ -136,10 +134,10 @@ function () {
 
       return new Fromise(function (resolve, reject) {
         fromises.map(function (f) {
-          return f.then(function (res) {
-            return resolve(res);
-          })["catch"](function (err) {
-            return reject(err);
+          return f.then(function (value) {
+            return resolve(value);
+          })["catch"](function (reason) {
+            return reject(reason);
           });
         });
       });
@@ -152,17 +150,19 @@ function () {
       }
 
       return new Fromise(function (resolve, reject) {
-        var results = new Array(fromises.length).fill(undefined);
+        var allResults = new Array(fromises.length).fill(undefined);
         var resolveCnt = 0;
-        var e = new events.EventEmitter().on('resolved', function () {
-          if (++resolveCnt >= fromises.length) resolve(results);
-        });
+
+        var updateResult = function updateResult(val, idx) {
+          allResults[idx] = val;
+          if (++resolveCnt >= fromises.length) resolve(allResults);
+        };
+
         fromises.map(function (f, i) {
-          return f.then(function (res) {
-            results[i] = res;
-            e.emit('resolved');
-          })["catch"](function (err) {
-            return reject(err);
+          return f.then(function (value) {
+            return updateResult(value, i);
+          })["catch"](function (reason) {
+            return reject(reason);
           });
         });
       });
@@ -171,8 +171,6 @@ function () {
 
   return Fromise;
 }();
-
-module.exports = Fromise;
 
 var DLL =
 /*#__PURE__*/
@@ -308,3 +306,5 @@ function (_DLL) {
 
   return FromiseNode;
 }(DLL);
+
+module.exports = Fromise;

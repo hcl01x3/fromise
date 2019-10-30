@@ -5,7 +5,7 @@
 Fake implementation of Promise using double linked list.
 
 ## Install
-npm install fromise`
+`npm install fromise`
 
 ## Usage
 

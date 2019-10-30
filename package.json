@@ -8,6 +8,7 @@
   ],
   "license": "MIT",
   "main": "dist/fromise.js",
+  "types": "lib/fromise.d.ts",
   "homepage": "https://github.com/hxxcxxx/fromise",
   "repository": "https://github.com/hxxcxxx/fromise.git",
   "files": [
