@@ -18,6 +18,8 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+var events = require('events');
+
 var STATE = {
   PENDING: 'pending',
   FULFILLED: 'fulfilled',
@@ -26,6 +28,20 @@ var STATE = {
 
 function isFunc(val) {
   return typeof val === 'function';
+}
+
+function isArray(val) {
+  return val instanceof Array;
+}
+
+function isFromise(val) {
+  return val instanceof Fromise;
+}
+
+function numOfFromises(arr) {
+  return arr.filter(function (f) {
+    return isFromise(f);
+  }).length;
 }
 
 var nodes = Symbol('nodes');
@@ -47,7 +63,7 @@ function () {
     try {
       executor(function (result) {
         return first.react(result, STATE.FULFILLED);
-      }, // reslove()
+      }, // resolve()
       function (error) {
         return first.react(error, STATE.REJECTED);
       } // reject()
@@ -96,6 +112,60 @@ function () {
       }
 
       return this[addNode](onFinally, undefined, true);
+    }
+  }], [{
+    key: "resolve",
+    value: function resolve(result) {
+      return new Fromise(function (resolve) {
+        return resolve(result);
+      });
+    }
+  }, {
+    key: "reject",
+    value: function reject(error) {
+      return new Fromise(function (_, reject) {
+        return reject(error);
+      });
+    }
+  }, {
+    key: "race",
+    value: function race(fromises) {
+      if (!isArray(fromises) || fromises.length !== numOfFromises(fromises)) {
+        throw new TypeError('Invalid argument. fromises must cotain only Fromise objects');
+      }
+
+      return new Fromise(function (resolve, reject) {
+        fromises.map(function (f) {
+          return f.then(function (res) {
+            return resolve(res);
+          })["catch"](function (err) {
+            return reject(err);
+          });
+        });
+      });
+    }
+  }, {
+    key: "all",
+    value: function all(fromises) {
+      if (!isArray(fromises) || fromises.length !== numOfFromises(fromises)) {
+        throw new TypeError('Invalid argument. fromises must cotain only Fromise objects');
+      }
+
+      return new Fromise(function (resolve, reject) {
+        var results = new Array(fromises.length).fill(undefined);
+        var resolveCnt = 0;
+        var e = new events.EventEmitter().on('resolved', function () {
+          if (++resolveCnt >= fromises.length) resolve(results);
+        });
+        fromises.map(function (f, i) {
+          return f.then(function (res) {
+            results[i] = res;
+            e.emit('resolved');
+          })["catch"](function (err) {
+            return reject(err);
+          });
+        });
+      });
     }
   }]);
 
@@ -192,7 +262,7 @@ function (_DLL) {
 
       if (this.state !== STATE.PENDING) return;
 
-      if (prevRes && prevRes instanceof Fromise && prevState === STATE.FULFILLED) {
+      if (isFromise(prevRes) && prevState === STATE.FULFILLED) {
         this.link(prevRes[nodes]);
         prevRes = this.prev.result;
         prevState = this.prev.state;
