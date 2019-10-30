@@ -64,6 +64,9 @@ const f = new Fromise(resolve => resolve(['A']))
 ### Resolve, Reject fromise
 ```js
 const Fromise = require('fromise');
+
+Fromise.resolve('resolve').then(res => console.log(res));
+Fromise.reject('reject').catch(err => console.error(err));
 ```
 
 ### Race, All fromises
@@ -87,10 +90,10 @@ const sleep = (val, ms) =>
   new Fromise(resolve => setTimeout(() => resolve(val), ms));
 
 Fromise.race([
-  sleep(200ms, 200),
-  sleep(120ms, 120),
-  sleep(110ms, 110),
-  sleep(115ms, 115)
+  sleep('200ms', 200),
+  sleep('120ms', 120),
+  sleep('110ms', 110),
+  sleep('115ms', 115)
 ])
   .then(res => console.log(res))
   .catch(err => console.error(err));
