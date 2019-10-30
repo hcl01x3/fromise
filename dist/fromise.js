@@ -28,14 +28,21 @@ function isFunc(val) {
   return typeof val === 'function';
 }
 
-module.exports =
+var nodes = Symbol('nodes');
+var addNode = Symbol('addNode');
+
+var Fromise =
 /*#__PURE__*/
 function () {
   function Fromise(executor) {
     _classCallCheck(this, Fromise);
 
+    if (!isFunc(executor)) {
+      throw new TypeError('Invalid argument. executor type must be a function.');
+    }
+
     var first = new FromiseNode();
-    this.nodes = first;
+    this[nodes] = first;
 
     try {
       executor(function (result) {
@@ -51,11 +58,11 @@ function () {
   }
 
   _createClass(Fromise, [{
-    key: "addNode",
-    value: function addNode(onFulfilled, onRejected) {
+    key: addNode,
+    value: function value(onFulfilled, onRejected) {
       var isFinally = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var newNode = new FromiseNode(onFulfilled, onRejected, isFinally);
-      this.nodes.addToTail(newNode);
+      this[nodes].addToTail(newNode);
 
       if (newNode.prev.state !== STATE.PENDING) {
         newNode.react(newNode.prev.result, newNode.prev.state);
@@ -65,23 +72,37 @@ function () {
     }
   }, {
     key: "then",
-    value: function then(onFulfilled, onRejected) {
-      return this.addNode(onFulfilled, onRejected);
+    value: function then(onFulfilled) {
+      if (!isFunc(onFulfilled)) {
+        throw new TypeError('Invalid argument. handler type must be a function.');
+      }
+
+      return this[addNode](onFulfilled, undefined);
     }
   }, {
     key: "catch",
     value: function _catch(onRejected) {
-      return this.addNode(undefined, onRejected);
+      if (!isFunc(onRejected)) {
+        throw new TypeError('Invalid argument. handler type must be a function.');
+      }
+
+      return this[addNode](undefined, onRejected);
     }
   }, {
     key: "finally",
     value: function _finally(onFinally) {
-      return this.addNode(onFinally, undefined, true);
+      if (!isFunc(onFinally)) {
+        throw new TypeError('Invalid argument. handler type must be a function.');
+      }
+
+      return this[addNode](onFinally, undefined, true);
     }
   }]);
 
   return Fromise;
 }();
+
+module.exports = Fromise;
 
 var DLL =
 /*#__PURE__*/
@@ -122,6 +143,17 @@ function () {
       tail.next = node;
       node.prev = tail;
     }
+  }, {
+    key: "link",
+    value: function link(list) {
+      if (list && list instanceof DLL) {
+        var head = list.getHead();
+        var tail = list.getTail();
+        head.prev = this.prev;
+        this.prev = tail;
+        tail.next = this;
+      }
+    }
   }]);
 
   return DLL;
@@ -147,11 +179,25 @@ function (_DLL) {
   }
 
   _createClass(FromiseNode, [{
+    key: "onLast",
+    value: function onLast() {
+      if (this.state === STATE.REJECTED || this.result instanceof Error) {
+        console.error('Unhandled Fromise Rejection Warning:', this.result);
+      }
+    }
+  }, {
     key: "react",
     value: function react(prevRes, prevState) {
       var _this2 = this;
 
       if (this.state !== STATE.PENDING) return;
+
+      if (prevRes && prevRes instanceof Fromise && prevState === STATE.FULFILLED) {
+        this.link(prevRes[nodes]);
+        prevRes = this.prev.result;
+        prevState = this.prev.state;
+        if (prevState === STATE.PENDING) return;
+      }
 
       var task = function task() {
         try {
@@ -161,11 +207,11 @@ function (_DLL) {
 
             _this2.result = prevRes;
             _this2.state = prevState;
-          } // handle then(onFulfilled, ...), when prev state is "fulfilled".
+          } // handle then(...), when prev state is "fulfilled".
           else if (prevState === STATE.FULFILLED && isFunc(_this2.onFulfilled)) {
               _this2.result = _this2.onFulfilled(prevRes);
               _this2.state = STATE.FULFILLED;
-            } // handle then(..., onRejected) or catch(...), when prev state is "rejected".
+            } // handle catch(...), when prev state is "rejected".
             else if (prevState === STATE.REJECTED && isFunc(_this2.onRejected)) {
                 _this2.result = _this2.onRejected(prevRes);
                 _this2.state = STATE.FULFILLED;
@@ -181,6 +227,8 @@ function (_DLL) {
 
         if (_this2.next) {
           _this2.next.react(_this2.result, _this2.state);
+        } else {
+          _this2.onLast();
         }
       };
 

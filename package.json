@@ -25,7 +25,7 @@
   },
   "scripts": {
     "clean": "rm -rf ./dist",
-    "build": "babel lib -w -d dist",
+    "build": "babel lib -d dist",
     "test:lib": "jest ./lib",
     "test:dist": "jest ./dist",
     "test": "yarn run build && yarn run test:dist"
