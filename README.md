@@ -56,7 +56,44 @@ const f = new Fromise(resolve => resolve(['A']))
     return res;
   })
   .then(res => console.log(res))
-  .catch(err => console.log(err));
+  .catch(err => console.error(err));
 
 // [ 'A', 'B', 'C', 'D' ]
+```
+
+### Resolve, Reject fromise
+```js
+const Fromise = require('fromise');
+```
+
+### Race, All fromises
+
+```js
+const Fromise = require('fromise');
+
+Fromise.all([
+  new Fromise(resolve => resolve('A')),
+  new Fromise(resolve => resolve('B')),
+  new Fromise(resolve => resolve('C')),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+// [ 'A', 'B', C' ]
+
+
+// for race test.
+const sleep = (val, ms) =>
+  new Fromise(resolve => setTimeout(() => resolve(val), ms));
+
+Fromise.race([
+  sleep(200ms, 200),
+  sleep(120ms, 120),
+  sleep(110ms, 110),
+  sleep(115ms, 115)
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+// 110ms
 ```
