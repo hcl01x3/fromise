@@ -1,6 +1,6 @@
 {
   "name": "fromise",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Fake implementation of Promise using double linked list.",
   "author": "hxxcxxx <hyochan.lee@gmail.com>",
   "keywords": [
