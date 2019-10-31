@@ -218,6 +218,7 @@ function () {
         var head = list.getHead();
         var tail = list.getTail();
         head.prev = this.prev;
+        if (this.prev) this.prev.next = head;
         this.prev = tail;
         tail.next = this;
       }
