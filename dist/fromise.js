@@ -86,12 +86,12 @@ function () {
     }
   }, {
     key: "then",
-    value: function then(onFulfilled) {
-      if (!isFunc(onFulfilled)) {
+    value: function then(onFulfilled, onRejected) {
+      if (!isFunc(onFulfilled) || onRejected && !isFunc(onRejected)) {
         throw new TypeError('Invalid argument. handler type must be a function.');
       }
 
-      return this[addNode](onFulfilled, undefined);
+      return this[addNode](onFulfilled, onRejected);
     }
   }, {
     key: "catch",

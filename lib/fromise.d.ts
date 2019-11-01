@@ -9,18 +9,16 @@ declare class Fromise {
    * @returns A new Fromise.
    */
   constructor(
-    executor: (
-      resolve?: (value: any) => any,
-      reject?: (reason: any) => any
-    ) => void
+    executor: (resolve?: (value: any) => any, reject?: (reason: any) => any) => void,
   );
 
   /**
-   * Attaches a callback for the resolving of the Fromise.
+   * Attaches a callbacks for the resolving or rejectiion of the Fromise.
    * @param onFulfilled The callback to execute when the Fromise is resolved.
+   * @param onRejected The callback to execute when the Fromise is rejected.
    * @returns A Fromise the callback is attached.
    */
-  then(onFulfilled: (result: any) => any): this;
+  then(onFulfilled: (result: any) => any, onRejected: (error: any) => any): this;
 
   /**
    * Attaches a callback for the rejection of the Fromise.
